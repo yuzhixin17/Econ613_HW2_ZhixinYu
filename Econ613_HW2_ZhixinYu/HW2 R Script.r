@@ -23,7 +23,7 @@ ydum <- as.numeric(Y > mean(Y))
 
 # save created data as csv.file
 datset <- cbind(1,X1,X2,X3,Y,ydum)
-write.csv(datset,"E1_Data creation")
+write.csv(datset,"E1_Data creation.csv")
 
 ######################## Exercise 2  OLS ########################
 
@@ -173,7 +173,7 @@ E3_parameter <- cbind(T_beta,beta_new)
 colnames(E3_parameter) <- c("T_beta","E_beta")
 # we can find that the difference between the true parameter and our optimized parameter is very small
 # save result
-write.csv(E3_parameter,"E3")
+write.csv(E3_parameter,"E3.csv")
  
 
 
