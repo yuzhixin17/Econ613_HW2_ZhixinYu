@@ -53,18 +53,24 @@ beta_hat
 ## Calculate the standard errors
 
 # (1) Using the standard formulas of the OLS
-# residuals
-resid <- y - X%*%beta_hat
-# calculate the OLS estimate for sigma square
-sigma2_hat <- (t(resid)%*%resid)/(nrow(X)-ncol(X))
-# estimate of V[beta_hat|X], which is conditional covariance matrix of the least squares slope estimator
-vcov_beta_hat <- c(sigma2_hat)*solve(t(X)%*%X)
-# estimate of standard errors
-sqrt(diag(vcov_beta_hat)) 
+
+# create function to calculate standard errors
+standard_error <- function(x, y){
+    beta <- solve(t(x)%*%x)%*%t(x)%*%y              # estimate the coefficients beta using formula : beta_hat = ((X'X)^(-1))X'y
+    resid = y - x%*%beta                            # residuals   
+    sigma2 = (t(resid)%*%resid)/(nrow(x)-ncol(x))   # calculate the OLS estimate for sigma square
+    vcov = c(sigma2)*solve(t(x)%*%x)                # estimate of V[beta_hat|X], which is conditional covariance matrix of the least squares slope estimator
+    f = sqrt(diag(vcov))                            # estimate of standard errors
+    return(f)
+}
+# plug in X and ydum
+standard_error(X, y)
 #X1          X2          X3 
 #0.040312946 0.017053768 0.002884871 0.021565945 
 
+
 # (2) Using bootstrap with 49 replications
+
 # create a dataset combining X and Y
 datset1 <- cbind(X,Y)
 
@@ -78,20 +84,17 @@ for(i in 1:49){
     X49 <- as.matrix(cbind(1,dat49[,c(2:4)]))
     # form new Y
     y49 <- as.matrix(dat49[,5])
-    # calculate se for each of 49 samples
-    beta_hat49 <- solve(t(X49)%*%X49)%*%t(X49)%*%y49
-    resid49 <- y49 - X49%*%beta_hat49
-    sigma2_hat49 <- (t(resid49)%*%resid49)/(nrow(X49)-ncol(X49))
-    vcov_beta_hat49 <- c(sigma2_hat49)*solve(t(X49)%*%X49)
-    se49 <- sqrt(diag(vcov_beta_hat49))
+    # using function to calculate se for each of 49 samples
+    se49 <- standard_error(X49, y49)
     # save results in the matrix boot49
     boot49 <- rbind(boot49,se49)
-    }
+}
 
 # Calculate the average of standard error
 colMeans(boot49)
 #X1          X2          X3 
-#0.040310899 0.017059116 0.002891144 0.021569302 
+#0.040322962 0.017064353 0.002890303 0.021569818   # this number may be slight different when reproduce
+
 
 # (2) Using bootstrap with 499 replications
 
@@ -106,19 +109,16 @@ for(i in 1:499){
     # form new Y
     y499 <- as.matrix(dat499[,5])
     # calculate se for each of 49 samples
-    beta_hat499 <- solve(t(X499)%*%X499)%*%t(X499)%*%y499
-    resid499 <- y499 - X499%*%beta_hat499
-    sigma2_hat499 <- (t(resid499)%*%resid499)/(nrow(X499)-ncol(X499))
-    vcov_beta_hat499 <- c(sigma2_hat499)*solve(t(X499)%*%X499)
-    se499 <- sqrt(diag(vcov_beta_hat499))
+    se499 <-  standard_error(X499, y499)
     # save results in the matrix boot49
     boot499 <- rbind(boot499,se499)
-    }
+}
 
 # Calculate the average of standard error
 colMeans(boot499)
 #X1          X2          X3 
-#0.040308007 0.017056341 0.002884332 0.021562551
+#0.040304727 0.017052905 0.002884479 0.021557210     # this number may be slight different when reproduce
+
 
 
 
@@ -196,7 +196,7 @@ Logit <- function(beta, ydum, X){
 }
 # calculating mean square for linear model
 Linear <- function(beta, ydum, X){
-    min<-t(ydum-X%*%beta)%*%(ydum-X%*%beta)
+    min <- t(ydum-X%*%beta)%*%(ydum-X%*%beta)
     return(min)
 }
 
